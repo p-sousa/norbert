@@ -6,6 +6,17 @@ const NORBERT_FSR_SERVICE_UUID = "0000aa40-0000-1000-8000-00805f9b34fb"
 const NORBERT_FSR_CHARACTERISTIC_UUID = "0000aa41-0000-1000-8000-00805f9b34fb"
 
 
+
+const NORBERT_PRIMARY_SERVICE_UUID = "3718ed86-d31a-11ed-afa1-0242ac120002"
+const NORBERT_RSSI_CHARACTERISTIC_UUID = "3718ed87-d31a-11ed-afa1-0242ac120002"
+
+// sensors
+
+const NORBERT_SENSORS_BT_UUID_PRIMARY = "3718ed00-d31a-11ed-afa1-0242ac120002"
+const NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID = "3718ed01-d31a-11ed-afa1-0242ac120002"
+const NORBERT_SENSORS_CHARACTERISTIC_TEMP1_UUID = "3718ed02-d31a-11ed-afa1-0242ac120002"
+const NORBERT_SENSORS_CHARACTERISTIC_TEMP2_UUID = "3718ed03-d31a-11ed-afa1-0242ac120002"
+
 const NORBERT_SUPPORTED_PREFIX = ["BLOOM"]
 
 /** Event listeners */
@@ -120,6 +131,7 @@ function writeToFile(data, name) {
 
 var last_quats = [];
 var last_fsr = [];
+var last_rssi = [];
 
 function handle_all_notifications(event) {
 
@@ -128,22 +140,34 @@ function handle_all_notifications(event) {
     if (recording) {
       csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", ACC\n";
     }
-  } else if (event.target.uuid == NORBERT_FSR_CHARACTERISTIC_UUID) {
+  } else if (event.target.uuid == NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID) {
     last_fsr = handle_fsr(event);
+    console.log("received fsr callbaclk")
     if (recording) {
       csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", FSR\n";
     }
   }
+  else if (event.target.uuid == NORBERT_RSSI_CHARACTERISTIC_UUID) {
+    last_rssi = handle_rssi(event);
+    console.log("received rssi callback");
+    if (recording) {
+      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", RSSI\n";
+    }
+  }
+
 }
 
 async function onButtonClick() {
   console.log('Requesting any Bluetooth Device...');
 
-  device = await getDevice(["BLOOM"], [NORBERT_ACC_SERVICE_UUID, NORBERT_FSR_SERVICE_UUID]);
+  device = await getDevice(["BLOOM"], [NORBERT_PRIMARY_SERVICE_UUID, NORBERT_SENSORS_BT_UUID_PRIMARY]);
   populateBluetoothDevices(NORBERT_SUPPORTED_PREFIX);
 
-  subscribe_characteristic(device, NORBERT_ACC_SERVICE_UUID, NORBERT_ACC_CHARACTERISTIC_UUID, handle_all_notifications);
-  subscribe_characteristic(device, NORBERT_FSR_SERVICE_UUID, NORBERT_FSR_CHARACTERISTIC_UUID, handle_all_notifications);
+
+  subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
+  subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID, handle_all_notifications);
+  //subscribe_characteristic(device, NORBERT_ACC_SERVICE_UUID, NORBERT_ACC_CHARACTERISTIC_UUID, handle_all_notifications);
+  //subscribe_characteristic(device, NORBERT_FSR_SERVICE_UUID, NORBERT_FSR_CHARACTERISTIC_UUID, handle_all_notifications);
 
   return 0;
 }
@@ -245,11 +269,21 @@ function handle_acc(event) {
   return values;
 }
 
+function handle_rssi(event) {
+  let value = event.target.value;
+
+  rssi = value.getInt8(0, littleEndian = true);
+  console.log(rssi);
+
+  document.getElementById("rssi").innerHTML = rssi;
+}
+
+
 function handle_fsr(event) {
   let value = event.target.value;
 
-  fsr1_value = value.getInt16(0, littleEndian = false);
-  fsr2_value = value.getInt16(2, littleEndian = false);
+  fsr1_value = value.getInt32(0, littleEndian = true);
+  fsr2_value = 0;// value.getInt16(0, littleEndian = false);
 
 
 
