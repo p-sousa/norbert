@@ -16,6 +16,7 @@ const NORBERT_SENSORS_BT_UUID_PRIMARY = "3718ed00-d31a-11ed-afa1-0242ac120002"
 const NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID = "3718ed01-d31a-11ed-afa1-0242ac120002"
 const NORBERT_SENSORS_CHARACTERISTIC_TEMP1_UUID = "3718ed02-d31a-11ed-afa1-0242ac120002"
 const NORBERT_SENSORS_CHARACTERISTIC_TEMP2_UUID = "3718ed03-d31a-11ed-afa1-0242ac120002"
+const NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID = "3718ed04-d31a-11ed-afa1-0242ac120002"
 
 const NORBERT_SUPPORTED_PREFIX = ["BLOOM"]
 
@@ -135,7 +136,7 @@ var last_rssi = [];
 
 function handle_all_notifications(event) {
 
-  if (event.target.uuid == NORBERT_ACC_CHARACTERISTIC_UUID) {
+  if (event.target.uuid == NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID) {
     last_quats = handle_acc(event);
     if (recording) {
       csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", ACC\n";
@@ -166,6 +167,7 @@ async function onButtonClick() {
 
   subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
   subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID, handle_all_notifications);
+  subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_ACC_SERVICE_UUID, NORBERT_ACC_CHARACTERISTIC_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_FSR_SERVICE_UUID, NORBERT_FSR_CHARACTERISTIC_UUID, handle_all_notifications);
 
@@ -253,13 +255,27 @@ function handle_acc(event) {
 
   let value = event.target.value;
 
-  x_raw = value.getInt16(0, littleEndian = true);
-  y_raw = value.getInt16(2, littleEndian = true);
-  z_raw = value.getInt16(4, littleEndian = true);
+  x_raw_0 = value.getInt32(4, littleEndian = true);
+  x_raw_1 = value.getInt32(8, littleEndian = true);
+  y_raw_0 = value.getInt16(12, littleEndian = true);
+  y_raw_1 = value.getInt16(16, littleEndian = true);
+  z_raw_0 = value.getInt16(20, littleEndian = true);
+  z_raw_1 = value.getInt16(24, littleEndian = true);
 
-  x = x_raw / (1 << 12);
-  y = y_raw / (1 << 12);
-  z = z_raw / (1 << 12);
+  // use x_raw_0 and x_raw_1 to get the x value where the x_raw_1 is decimal part in parts per million
+  x_raw = x_raw_0 + x_raw_1 / 1000000;
+  y_raw = y_raw_0 + y_raw_1 / 1000000;
+  z_raw = z_raw_0 + z_raw_1 / 1000000;
+
+  // from ms^-2 to g
+  x_raw = x_raw / 9.8;
+  y_raw = y_raw / 9.8;
+  z_raw = z_raw / 9.8;
+
+
+  x = x_raw;
+  y = y_raw;
+  z = z_raw;
 
   // vector magnitude
   //console.log(Math.sqrt(x * x + y * y + z * z))
