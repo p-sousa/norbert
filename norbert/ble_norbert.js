@@ -282,7 +282,7 @@ function handle_rssi(event) {
 function handle_fsr(event) {
   let value = event.target.value;
 
-  fsr1_value = value.getInt32(0, littleEndian = true);
+  fsr1_value = value.getInt32(4, littleEndian = true);
   fsr2_value = 0;// value.getInt16(0, littleEndian = false);
 
 
