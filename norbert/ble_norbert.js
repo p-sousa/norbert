@@ -257,10 +257,10 @@ function handle_acc(event) {
 
   x_raw_0 = value.getInt32(4, littleEndian = true);
   x_raw_1 = value.getInt32(8, littleEndian = true);
-  y_raw_0 = value.getInt16(12, littleEndian = true);
-  y_raw_1 = value.getInt16(16, littleEndian = true);
-  z_raw_0 = value.getInt16(20, littleEndian = true);
-  z_raw_1 = value.getInt16(24, littleEndian = true);
+  y_raw_0 = value.getInt32(12, littleEndian = true);
+  y_raw_1 = value.getInt32(16, littleEndian = true);
+  z_raw_0 = value.getInt32(20, littleEndian = true);
+  z_raw_1 = value.getInt32(24, littleEndian = true);
 
   // use x_raw_0 and x_raw_1 to get the x value where the x_raw_1 is decimal part in parts per million
   x_raw = x_raw_0 + x_raw_1 / 1000000;
