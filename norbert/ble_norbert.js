@@ -161,13 +161,13 @@ function handle_all_notifications(event) {
 async function onButtonClick() {
   console.log('Requesting any Bluetooth Device...');
 
-  device = await getDevice(["BLOOM"], [NORBERT_PRIMARY_SERVICE_UUID, NORBERT_SENSORS_BT_UUID_PRIMARY]);
+  device = await getDevice(["BLOOM"], [NORBERT_SENSORS_BT_UUID_PRIMARY]);
   populateBluetoothDevices(NORBERT_SUPPORTED_PREFIX);
 
 
-  subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
+  //subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
   subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID, handle_all_notifications);
-  subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID, handle_all_notifications);
+  //subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_ACC_SERVICE_UUID, NORBERT_ACC_CHARACTERISTIC_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_FSR_SERVICE_UUID, NORBERT_FSR_CHARACTERISTIC_UUID, handle_all_notifications);
 
@@ -255,6 +255,8 @@ function handle_acc(event) {
 
   let value = event.target.value;
 
+  console.log(value);
+
   x_raw_0 = value.getInt32(4, littleEndian = true);
   x_raw_1 = value.getInt32(8, littleEndian = true);
   y_raw_0 = value.getInt32(12, littleEndian = true);
@@ -262,7 +264,7 @@ function handle_acc(event) {
   z_raw_0 = value.getInt32(20, littleEndian = true);
   z_raw_1 = value.getInt32(24, littleEndian = true);
 
-  // use x_raw_0 and x_raw_1 to get the x value where the x_raw_1 is decimal part in parts per million
+
   x_raw = x_raw_0 + x_raw_1 / 1000000;
   y_raw = y_raw_0 + y_raw_1 / 1000000;
   z_raw = z_raw_0 + z_raw_1 / 1000000;
