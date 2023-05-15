@@ -161,11 +161,11 @@ function handle_all_notifications(event) {
 async function onButtonClick() {
   console.log('Requesting any Bluetooth Device...');
 
-  device = await getDevice(["BLOOM"], [NORBERT_SENSORS_BT_UUID_PRIMARY]);
+  device = await getDevice(["BLOOM"], [NORBERT_PRIMARY_SERVICE_UUID, NORBERT_SENSORS_BT_UUID_PRIMARY]);
   populateBluetoothDevices(NORBERT_SUPPORTED_PREFIX);
 
 
-  //subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
+  subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
   subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_ACC_SERVICE_UUID, NORBERT_ACC_CHARACTERISTIC_UUID, handle_all_notifications);
@@ -232,6 +232,10 @@ function addDataFSR(chart, fsr1_value, fsr2_value) {
 
   fsr1.push(fsr1_value);
   fsr2.push(fsr2_value);
+
+
+  document.getElementById("fsr1_value").innerHTML = "FSR1: " + fsr1_value;
+  document.getAnimations("fsr2_value").innerHTML = "FSR2: " + fsr2_value;
 
   chart.data.datasets[0].data = fsr1;
   chart.data.datasets[1].data = fsr2;
