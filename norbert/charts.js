@@ -116,7 +116,7 @@ var myChart_fsr = new Chart(chart_fsr, {
     scales: {
       y: {
         beginAtZero: false,
-        max: 6000,
+        max: 3000,
         min: 0
       },
       x:
