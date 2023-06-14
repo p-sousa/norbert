@@ -133,29 +133,44 @@ function writeToFile(data, name) {
 var last_quats = [];
 var last_fsr = [];
 var last_rssi = [];
+var last_temp1 = [];
+var last_temp2 = [];
 
 function handle_all_notifications(event) {
 
   if (event.target.uuid == NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID) {
     last_quats = handle_acc(event);
     if (recording) {
-      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", ACC\n";
+      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + "," + last_rssi + "," + last_temp1 + "," + last_temp2 + ", ACC\n";
     }
   } else if (event.target.uuid == NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID) {
     last_fsr = handle_fsr(event);
     console.log("received fsr callbaclk")
     if (recording) {
-      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", FSR\n";
+      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + "," + last_rssi + "," + last_temp1 + "," + last_temp2 + ", FSR\n";
     }
   }
   else if (event.target.uuid == NORBERT_RSSI_CHARACTERISTIC_UUID) {
     last_rssi = handle_rssi(event);
     console.log("received rssi callback");
     if (recording) {
-      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + ", RSSI\n";
+      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + "," + last_rssi + "," + last_temp1 + "," + last_temp2 + ", RSSI\n";
     }
   }
-
+  else if (event.target.uuid == NORBERT_SENSORS_CHARACTERISTIC_TEMP1_UUID) {
+    last_temp1 = handle_temp1(event);
+    console.log("received temp1 callback");
+    if (recording) {
+      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + "," + last_rssi + "," + last_temp1 + "," + last_temp2 + ", TEMP1\n";
+    }
+  }
+  else if (event.target.uuid == NORBERT_SENSORS_CHARACTERISTIC_TEMP2_UUID) {
+    last_temp2 = handle_temp2(event);
+    console.log("received temp2 callback");
+    if (recording) {
+      csv_contents += getCurrentTimestamp() + ", " + last_quats + "," + last_fsr + "," + last_rssi + "," + last_temp1 + "," + last_temp2 + ", TEMP2\n";
+    }
+  }
 }
 
 async function onButtonClick() {
@@ -168,6 +183,9 @@ async function onButtonClick() {
   subscribe_characteristic(device, NORBERT_PRIMARY_SERVICE_UUID, NORBERT_RSSI_CHARACTERISTIC_UUID, handle_all_notifications);
   subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_FSR_UUID, handle_all_notifications);
   subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_ACC_UUID, handle_all_notifications);
+
+  //subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_TEMP1_UUID, handle_all_notifications);
+  //subscribe_characteristic(device, NORBERT_SENSORS_BT_UUID_PRIMARY, NORBERT_SENSORS_CHARACTERISTIC_TEMP2_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_ACC_SERVICE_UUID, NORBERT_ACC_CHARACTERISTIC_UUID, handle_all_notifications);
   //subscribe_characteristic(device, NORBERT_FSR_SERVICE_UUID, NORBERT_FSR_CHARACTERISTIC_UUID, handle_all_notifications);
 
@@ -298,6 +316,8 @@ function handle_rssi(event) {
   console.log(rssi);
 
   document.getElementById("rssi").innerHTML = rssi;
+
+  return rssi;
 }
 
 
@@ -315,6 +335,31 @@ function handle_fsr(event) {
 
   return values;
 
+}
+
+function handle_temp1(event) {
+  let value = event.target.value;
+
+  temp1_value = value.getInt32(0, littleEndian = true);
+
+  temp1 = temp1_value / 100 + temp1_value % 100 / 100;
+
+  document.getElementById("temp1").innerHTML = temp1;
+
+  return temp1;
+}
+
+function handle_temp2(event) {
+  let value = event.target.value;
+
+
+  temp2_value = value.getInt32(0, littleEndian = true);
+
+  temp2 = temp2_value / 100 + temp2_value % 100 / 100;
+
+  document.getElementById("temp2").innerHTML = temp2;
+
+  return temp2;
 }
 
 
